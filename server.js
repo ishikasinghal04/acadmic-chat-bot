@@ -7,24 +7,31 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const mongoose = require("mongoose");
 require("dotenv").config();
 
-// MODULE: Data Imports
-// Importing the structured knowledge base for academic paths
+// MODULE: Data & Models
 const knowledgeBase = require("./knowledgeBase");
+const Appointment = require("./models/Appointment");
+const Chat = require("./models/Chat");
 
 const app = express();
 
 // MODULE: Middleware Setup
-// Enabling CORS for cross-origin requests and JSON parsing for API bodies
 app.use(cors());
 app.use(express.json());
-// Serving static frontend files from the 'public' directory
 app.use(express.static(path.join(__dirname, "public")));
 
-// MODULE: Temporary Data Storage
-// Local storage for appointment data (in-memory)
-let appointments = [];
+// MODULE: MongoDB Connection
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/academic-advisor";
+mongoose.connect(MONGODB_URI)
+  .then(() => console.log("🌱 Connected to MongoDB Successfully"))
+  .catch(err => console.error("❌ MongoDB Connection Error:", err));
+
+// MODULE: Chatbot API Engine
+app.post("/api/chat", async (req, res) => {
+  const { message, history } = req.body;
+  // ... (rest of the chat logic remains same for now)
 
 // MODULE: Chatbot API Engine
 // Endpoint to handle user messages and generate AI responses using Gemini API
@@ -101,32 +108,34 @@ Greet the student by name and guide them through their academic journey.`;
 });
 
 // MODULE: Appointment Management API
-// Endpoint to save new appointment details
-app.post("/api/appointments", (req, res) => {
+// Endpoint to save new appointment details to MongoDB
+app.post("/api/appointments", async (req, res) => {
   const { name, email, date, time, reason } = req.body;
 
   if (!name || !email || !date || !time || !reason) {
     return res.status(400).json({ error: "Missing required fields." });
   }
 
-  const appointment = {
-    id: Date.now(),
-    name,
-    email,
-    date,
-    time,
-    reason,
-    createdAt: new Date().toISOString(),
-  };
-
-  appointments.push(appointment);
-  res.json({ message: "Success", appointment });
+  try {
+    const appointment = new Appointment({ name, email, date, time, reason });
+    await appointment.save();
+    res.json({ message: "Success", appointment });
+  } catch (err) {
+    console.error("Database Error:", err);
+    res.status(500).json({ error: "Could not save appointment." });
+  }
 });
 
-// Endpoint to retrieve all booked appointments
-app.get("/api/appointments", (req, res) => {
-  res.json(appointments);
+// Endpoint to retrieve all booked appointments from MongoDB
+app.get("/api/appointments", async (req, res) => {
+  try {
+    const appointments = await Appointment.find().sort({ createdAt: -1 });
+    res.json(appointments);
+  } catch (err) {
+    res.status(500).json({ error: "Could not fetch appointments." });
+  }
 });
+
 
 // MODULE: Server Initialization
 const PORT = process.env.PORT || 3000;

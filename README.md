@@ -11,11 +11,16 @@ This project was developed with a focus on **Module-Driven Architecture**, ensur
 
 ## 🛠️ Module-Wise Technical Architecture
 
-### 🛡️ 1. Backend Engine (`server.js`)
-The core server is built on **Node.js** and **Express.js**, acting as a robust middleware between the client and the AI ecosystem.
-- **AI Integration**: Implements advanced prompt engineering with Google Gemini API to provide stream-specific guidance.
-- **State Management**: Handles multi-turn conversation history to maintain context throughout the session.
-- **RESTful APIs**: Provides dedicated endpoints for chat processing (`/api/chat`) and appointment management (`/api/appointments`).
+### 🛡️ 1. AI Advisory Engine (Backend)
+- **Core Technology**: Node.js, Express.js, and **MongoDB (Mongoose)**.
+- **Functionality**: Processes natural language queries and provides context-aware guidance.
+- **Database**: Uses MongoDB to persist student appointments and system interaction logs.
+
+## 🛠️ Technology Stack
+- **Frontend**: HTML5, CSS3, JavaScript (ES6+).
+- **Backend**: Node.js, Express.js.
+- **Database**: **MongoDB (NoSQL)** for persistent storage.
+- **AI Integration**: Google Gemini API.
 
 ### 📊 2. Intelligent Knowledge Base (`knowledgeBase.js`)
 A curated dataset that powers the AI's decision-making process.
