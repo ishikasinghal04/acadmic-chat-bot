@@ -1,102 +1,136 @@
-# 🎓 Academic Advisor — Full-Stack Student Portal
+# 🎓 AcadBot Enterprise: Elite AI Student Advisory Portal
 
-![Academic Advisor Banner](https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80)
-
-## 🌟 Overview
-The **Academic Advisor Chatbot** is a sophisticated full-stack application designed to bridge the gap between students and academic guidance. Leveraging the power of **Google Gemini AI**, it provides personalized career counseling, course recommendations, and administrative support through an intuitive, modern interface.
-
-This project was developed with a focus on **Module-Driven Architecture**, ensuring scalability, maintainability, and a premium user experience.
+Welcome to the **AcadBot Enterprise Portal**, a state-of-the-art, AI-driven academic advisory system designed to provide students with real-time career guidance, course counseling, and seamless appointment management.
 
 ---
 
-## 🛠️ Module-Wise Technical Architecture
-
-### 🛡️ 1. AI Advisory Engine (Backend)
-- **Core Technology**: Node.js, Express.js, and **MongoDB (Mongoose)**.
-- **Functionality**: Processes natural language queries and provides context-aware guidance.
-- **Database**: Uses MongoDB to persist student appointments and system interaction logs.
-
-## 🛠️ Technology Stack
-- **Frontend**: HTML5, CSS3, JavaScript (ES6+).
-- **Backend**: Node.js, Express.js.
-- **Database**: **MongoDB (NoSQL)** for persistent storage.
-- **AI Integration**: Google Gemini API.
-
-### 📊 2. Intelligent Knowledge Base (`knowledgeBase.js`)
-A curated dataset that powers the AI's decision-making process.
-- **Science Stream**: Detailed paths for Engineering (B.Tech), Medical (MBBS), Research (Physics/Bio), and Data Science.
-- **Commerce Stream**: Career tracks for Accounting (CA), Management (MBA), Banking, and Marketing.
-- **Arts Stream**: Creative and legal paths including Design (B.Des), Law (LLB), Media, and Psychology.
-
-### 🎨 3. Dynamic UI/UX (`public/index.html` & `style.css`)
-A high-end frontend built with a **Glassmorphism Design System**.
-- **Responsive Layout**: Fully optimized for Desktop, Tablet, and Mobile devices.
-- **Visual Aesthetics**: Features dynamic background blobs, smooth CSS transitions, and a sleek dark-themed sidebar.
-- **Accessibility**: Semantic HTML5 structure for better SEO and screen reader compatibility.
-
-### ⚙️ 4. Frontend Controller (`public/script.js`)
-The brain of the client-side application.
-- **View Switching Logic**: Manages a Single Page Application (SPA) experience without page reloads.
-- **Interaction Chips**: Features "Suggested Chips" that dynamically appear based on AI responses to guide user flow.
-- **LocalStorage Persistence**: Saves chat history locally so students don't lose their progress on refresh.
+## 📑 Table of Contents
+1. [Project Overview](#project-overview)
+2. [Core Architecture](#core-architecture)
+3. [Technical Stack](#technical-stack)
+4. [AI Intelligence Layer (Gemini-Only)](#ai-intelligence-layer)
+5. [Database & Persistence](#database-persistence)
+6. [UI/UX Features](#uiux-features)
+7. [Installation & Setup](#installation--setup)
+8. [Maintenance & Diagnostics](#maintenance--diagnostics)
 
 ---
 
-## ✨ Key Features
-- **🤖 Smart Advisor Chat**: Get instant answers to complex academic queries.
-- **📅 Appointment Scheduler**: Seamless integration with faculty calendars via Calendly.
-- **📚 Quick Resource Guide**: One-click access to curated modules for Placements, Internships, and Exam Prep.
-- **📝 Real-time Formatting**: Support for bold text, lists, and chips in chat bubbles.
-- **🔒 Secure Environment**: Environment variable protection for sensitive API keys.
+## 🌟 Project Overview
+AcadBot is more than just a chatbot; it's a **Cognitive Academic Assistant**. It bridges the gap between students and career counseling by providing 24/7 intelligent responses and an automated booking system for human counselor consultations.
+
+### Key Goals:
+- **High IQ Responses**: Leveraging Google Gemini 1.5 Flash for accurate academic advice.
+- **Session Persistence**: Maintaining full chat history across multiple devices.
+- **Enterprise UI**: A ChatGPT-style sidebar and a premium dark-themed interface.
+- **Resilience**: A non-blocking architecture that stays online even if the database is temporarily unreachable.
 
 ---
 
-## 🚀 Getting Started
+## 🏗️ Core Architecture
+The project follows a modular **Model-View-Controller (MVC)** pattern for maximum scalability.
 
-### Prerequisites
-- Node.js (v14 or higher)
-- npm (Node Package Manager)
-- Google Gemini API Key
-
-### Installation
-1. **Clone the Project**
-   ```bash
-   git clone https://github.com/KaifMansoori/acadmic-chat-bot.git
-   cd acadmic-chat-bot
-   ```
-
-2. **Install Dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Environment Setup**
-   Create a `.env` file in the root directory:
-   ```env
-   PORT=3000
-   GEMINI_API_KEY=your_api_key_here
-   ```
-
-4. **Run Application**
-   ```bash
-   npm start
-   ```
-   *Access the portal at `http://localhost:3000`*
+| Component | Responsibility |
+| :--- | :--- |
+| **Frontend** | Vanilla JS, HTML5, CSS3 with a focus on premium aesthetics. |
+| **Backend** | Node.js & Express server handling API routing and AI orchestration. |
+| **Database** | MongoDB Atlas for student profiles, sessions, and chat logs. |
+| **AI Engine** | Google Generative AI (Gemini) via direct API integration. |
 
 ---
 
-## 📂 Repository Structure
-```bash
-├── server.js              # Node/Express Backend
-├── knowledgeBase.js       # Academic Data Module
-├── package.json           # Dependency Manifest
-├── .env                   # Configuration (Secret)
-├── .gitignore             # Git Exclusions
-└── public/                # Frontend Assets
-    ├── index.html         # UI Structure
-    ├── style.css          # Premium Styling
-    └── script.js          # Interactive Logic
-```
+## 🛠️ Technical Stack
+The system is built using modern, production-ready technologies:
+
+| Category | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Runtime** | Node.js (v22+) | High-performance server environment. |
+| **Framework** | Express.js | Robust API routing and middleware management. |
+| **Database** | MongoDB (Mongoose) | Schema-based data persistence and session tracking. |
+| **AI SDK** | Google Gemini API | Natural Language Processing and Student Advisory. |
+| **Security** | JWT & Bcrypt.js | Encrypted authentication and role-based access. |
+| **Styling** | Vanilla CSS | Custom design system with glassmorphism and animations. |
 
 ---
-*Created with ❤️ for Academic Excellence.*
+
+## 🧠 AI Intelligence Layer
+After a thorough "Deep Audit" of various AI providers (Grok, OpenRouter, GitHub), the system has been unified to use the **Google Gemini 1.5 Flash** engine for its superior balance of speed, accuracy, and free-tier reliability.
+
+### AI Configuration:
+- **Model**: `gemini-1.5-flash-latest`
+- **Logic**: Implements a "History-Aware" prompt engineering technique, where the last 4 messages are injected into the context to maintain conversational continuity.
+- **Fallback**: If the AI encounters a quota limit, it returns a graceful "Syncing" message instead of crashing the frontend.
+
+---
+
+## 🗄️ Database & Persistence
+The database is the backbone of AcadBot's memory. We use **MongoDB Atlas** for its cloud-native scalability.
+
+### 📊 Data Schema:
+
+#### 1. `Chat` Model (Sessions)
+This model tracks individual conversations.
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `userName` | String | The ID or Name of the student. |
+| `title` | String | Auto-generated title based on the first query. |
+| `messages` | Array | Objects containing `role` (user/assistant) and `content`. |
+| `updatedAt` | Date | Used to sort "Recent Conversations" in the sidebar. |
+
+#### 2. `User` Model (Auth)
+Handles login and registration.
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `studentId` | String | Unique identifier (e.g., STU007). |
+| `password` | String | Bcrypt-hashed password for security. |
+| `role` | String | Defaults to `student`, can be upgraded to `admin`. |
+
+---
+
+## ✨ UI/UX Features
+The interface is designed to "WOW" the user from the first click:
+
+1.  **ChatGPT Sidebar**: A persistent navigation bar that lists previous sessions, allows for session deletion, and quick navigation.
+2.  **Smart Chat Input**: "Enter to Send" functionality with a sleek, glowing send button.
+3.  **Real-time Insights**: An Admin Dashboard that tracks student engagement and AI performance.
+4.  **Glassmorphism**: Transparent, frosted-glass effects on cards and modals for a modern premium feel.
+
+---
+
+## 🚀 Installation & Setup
+
+1.  **Clone the Repository**:
+    ```bash
+    git clone https://github.com/ishikasinghal04/acadmic-chat-bot.git
+    cd academic-advisor-chatbot
+    ```
+
+2.  **Install Dependencies**:
+    ```bash
+    npm install
+    ```
+
+3.  **Environment Variables**:
+    Create a `.env` file in the root:
+    ```env
+    PORT=3000
+    MONGODB_URI=your_mongodb_atlas_connection_string
+    GEMINI_API_KEY=your_google_ai_studio_key
+    ```
+
+4.  **Run the Server**:
+    ```bash
+    npm start
+    ```
+
+---
+
+## 🛡️ Maintenance & Diagnostics
+The project includes an internal diagnostic suite for developers:
+
+- **`test-gemini.js`**: Run this to verify if your Gemini API key is active and has quota.
+- **Non-Blocking Connection**: If your MongoDB password is wrong, the server will still boot and allow you to test the AI interface in "Offline Mode".
+
+---
+
+**Developed with ❤️ by the AcadBot Team.**
