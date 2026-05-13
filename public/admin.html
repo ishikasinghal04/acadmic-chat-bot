@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AcadBot | Admin Command Center</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    .admin-container { padding: 40px; max-width: 1400px; margin: 0 auto; }
+    .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+    .data-card { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 30px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th { text-align: left; color: var(--accent); padding: 18px; border-bottom: 2px solid var(--border); font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; }
+    td { padding: 18px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: top; }
+    
+    .student-main { font-weight: 700; color: white; font-size: 15px; display: block; }
+    .sub-text { font-size: 12px; color: var(--text-muted); display: block; margin-top: 4px; }
+    
+    .badge-premium { background: rgba(79, 70, 229, 0.2); color: var(--accent); border: 1px solid var(--accent); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; }
+    .badge-urgent { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; }
+    
+    .action-group { display: flex; gap: 10px; }
+    .btn-delete { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 8px 12px; border-radius: 10px; cursor: pointer; font-size: 12px; transition: 0.3s; }
+    .btn-delete:hover { background: #ef4444; color: white; }
+  </style>
+</head>
+<body>
+  <div id="admin-login-overlay" style="position:fixed; inset:0; background:var(--bg); z-index:5000; display:flex; align-items:center; justify-content:center;">
+    <div class="login-card" style="width:100%; max-width:400px; padding:40px; text-align:center;">
+      <span style="font-size:40px;">🛡️</span>
+      <h2 style="margin:20px 0;">Admin Portal</h2>
+      <input type="text" id="admin-user" placeholder="Admin Email" style="width:100%; padding:14px; margin-bottom:12px; background:var(--surface2); border:1px solid var(--border); color:white; border-radius:12px;" />
+      <input type="password" id="admin-pass" placeholder="Password" style="width:100%; padding:14px; margin-bottom:25px; background:var(--surface2); border:1px solid var(--border); color:white; border-radius:12px;" />
+      <button onclick="adminLogin()" style="width:100%; padding:15px; background:var(--accent); color:white; border:none; border-radius:14px; cursor:pointer; font-weight:700;">Login to System</button>
+      <div id="admin-login-err" style="color:#ef4444; margin-top:15px; font-size:14px;"></div>
+    </div>
+  </div>
+
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+
+  <div class="admin-container">
+    <header class="admin-header">
+      <div>
+        <h1>System Overview</h1>
+        <p>Enterprise data management and student tracking</p>
+      </div>
+      <button class="nav-btn" onclick="location.href='/'">Exit Dashboard</button>
+    </header>
+
+    <div class="admin-grid">
+      <!-- FULL APPOINTMENT DETAILS -->
+      <div class="data-card">
+        <h3>📅 Comprehensive Appointment Ledger</h3>
+        <table id="admin-appt-table">
+          <thead>
+            <tr>
+              <th>Student & ID</th>
+              <th>Contact Details</th>
+              <th>Academic Info</th>
+              <th>Schedule</th>
+              <th>Consultation Reason</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admin-appt-list"></tbody>
+        </table>
+      </div>
+
+      <!-- PRIORITY CHATS -->
+      <div class="data-card">
+        <h3>🚨 Urgent Support Monitoring</h3>
+        <table id="admin-chat-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Recent Message</th>
+              <th>Alert Level</th>
+              <th>Operation</th>
+            </tr>
+          </thead>
+          <tbody id="admin-chat-list"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function adminLogin() {
+      const user = document.getElementById('admin-user').value;
+      const pass = document.getElementById('admin-pass').value;
+      if(user === 'admin@acadbot.com' && pass === 'admin@123') {
+        sessionStorage.setItem('admin_auth', 'true');
+        document.getElementById('admin-login-overlay').style.display = 'none';
+        loadAdminData();
+      } else { document.getElementById('admin-login-err').textContent = "Access Denied."; }
+    }
+
+    function checkAuth() {
+      if(sessionStorage.getItem('admin_auth') === 'true') {
+        document.getElementById('admin-login-overlay').style.display = 'none';
+        loadAdminData();
+      }
+    }
+
+    async function loadAdminData() {
+      try {
+        const apptRes = await fetch('/api/appointments');
+        const appts = await apptRes.json();
+        document.getElementById('admin-appt-list').innerHTML = appts.map(a => `
+          <tr>
+            <td>
+              <span class="student-main">${a.name}</span>
+              <span class="sub-text">Student ID: ${a.studentId}</span>
+            </td>
+            <td>
+              <span class="student-main">${a.email}</span>
+              <span class="sub-text">Phone: ${a.phone || 'N/A'}</span>
+            </td>
+            <td>
+              <span class="student-main">${a.department || 'N/A'}</span>
+              <span class="sub-text">${a.year || 'N/A'}</span>
+            </td>
+            <td>
+              <span class="badge-premium">${a.date}</span>
+              <span class="sub-text">Time: ${a.time}</span>
+            </td>
+            <td>
+              <select onchange="updateStatus('${a._id}', this.value)" style="background:var(--surface2); color:white; border:1px solid var(--border); padding:5px; border-radius:8px; font-size:12px;">
+                <option value="Pending" ${a.status==='Pending'?'selected':''}>⏳ Pending</option>
+                <option value="Confirmed" ${a.status==='Confirmed'?'selected':''}>✅ Confirmed</option>
+                <option value="Completed" ${a.status==='Completed'?'selected':''}>🏁 Completed</option>
+                <option value="Cancelled" ${a.status==='Cancelled'?'selected':''}>❌ Cancelled</option>
+              </select>
+              <input type="text" placeholder="Meet Link" value="${a.meetingLink || ''}" 
+                     onchange="updateMeetingLink('${a._id}', this.value)"
+                     style="width:100%; margin-top:8px; background:var(--surface2); border:1px solid var(--border); color:var(--accent); padding:5px; border-radius:8px; font-size:11px;" />
+              <span class="sub-text" style="color:var(--text); line-height:1.4; margin-top:8px;">${a.reason || 'General inquiry'}</span>
+            </td>
+            <td>
+              <button class="btn-delete" onclick="deleteAppt('${a._id}')">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+
+        const allChatsRes = await fetch('/api/admin/chats');
+        const chats = await allChatsRes.json();
+        document.getElementById('admin-chat-list').innerHTML = chats
+          .filter(c => c.messages && c.messages.some(m => m.isHighPriority))
+          .map(c => `
+            <tr>
+              <td><span class="student-main">${c.userName}</span></td>
+              <td><span class="sub-text">"${c.messages[c.messages.length-1].content.substring(0, 50)}..."</span></td>
+              <td><span class="badge-urgent">HIGH PRIORITY</span></td>
+              <td><button class="nav-btn" style="padding:6px 12px; font-size:11px;">Analyze History</button></td>
+            </tr>
+          `).join('');
+      } catch(e) { console.error("Admin Refresh Error:", e); }
+    }
+
+    async function deleteAppt(id) {
+      if(!confirm("Are you sure you want to cancel this student's appointment?")) return;
+      await fetch('/api/appointments/' + id, { method: 'DELETE' });
+      loadAdminData();
+    }
+
+    async function updateStatus(id, newStatus) {
+      await fetch(`/api/appointments/${id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      console.log("Status Updated to", newStatus);
+    }
+
+    async function updateMeetingLink(id, link) {
+      await fetch(`/api/appointments/${id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ meetingLink: link, status: "Confirmed" }) // Auto confirm if link added
+      });
+      console.log("Meeting Link Updated");
+    }
+
+    window.onload = checkAuth;
+  </script>
+</body>
+</html>

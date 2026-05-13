@@ -1,239 +1,196 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Academic Advisor — Portfolio Project</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
-    rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AcadBot — Enterprise Student Portal</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
-
 <body>
-  <!-- MODULE: Login Overlay -->
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+
+  <!-- MODULE: Auth Overlay (Signup/Login) -->
   <div id="login-overlay" class="login-overlay">
-    <div class="login-card">
+    <div class="login-card" id="auth-form-container">
       <span class="logo-icon">🎓</span>
-      <h2>Welcome to AcadBot</h2>
-      <p>Please enter your Student ID to continue</p>
-      <input type="text" id="student-id-input" placeholder="e.g., STU12345" />
-      <button onclick="login()">Enter Portal</button>
+      <h2 id="auth-title">Welcome Back</h2>
+      <p id="auth-sub">Login to your student account</p>
+      
+      <div id="signup-fields" style="display: none;">
+        <input type="text" id="signup-name" placeholder="Full Name" />
+      </div>
+      <input type="email" id="auth-email" placeholder="Email Address" />
+      <input type="password" id="auth-pass" placeholder="Password" />
+      <div id="signup-fields-2" style="display: none;">
+        <input type="text" id="signup-sid" placeholder="Student ID (e.g. STU001)" />
+      </div>
+
+      <button onclick="handleAuth()" id="auth-btn" style="margin-top: 15px; width: 100%; padding: 12px; border-radius: 12px; background: var(--accent); color: white; border: none; cursor: pointer; font-weight: 600;">Login</button>
+      
+      <p style="margin-top: 15px; font-size: 13px; opacity: 0.7;" id="auth-toggle-text">
+        New here? <a href="#" onclick="toggleAuth(true)" style="color: var(--accent); font-weight: 600;">Create Account</a>
+      </p>
+      <p style="margin-top: 10px; font-size: 12px; opacity: 0.5;">Administrator? <a href="/admin.html" style="color: var(--text); text-decoration: underline;">Admin Portal</a></p>
     </div>
   </div>
 
-  <!-- MODULE: UI Background Design -->
-  <!-- ... (blobs remain) -->
-
   <div class="app-wrapper">
-    <!-- MODULE: Sidebar Navigation -->
     <aside class="sidebar">
       <div class="sidebar-header">
         <div class="logo">
           <span class="logo-icon">🎓</span>
           <div>
             <div class="logo-title">AcadBot</div>
-            <div class="logo-sub" id="display-student-id">Student Portal</div>
+            <div id="display-student-id" class="logo-sub">Student Portal</div>
           </div>
         </div>
       </div>
 
-      <nav class="sidebar-nav">
-        <button class="nav-btn active" id="btn-chat" onclick="showView('chat')">
-          <span>💬</span> Advisor Chat
-        </button>
-        <button class="nav-btn" id="btn-appointment" onclick="showView('appointment')">
-          <span>📅</span> Appointments
-        </button>
-        <button class="nav-btn" id="btn-courses" onclick="showView('courses')">
-          <span>📚</span> Quick Guide
-        </button>
-        <button class="nav-btn" id="btn-analytics" onclick="showView('analytics')">
-          <span>📊</span> Insights Hub
-        </button>
+        <button class="nav-btn active" id="btn-chat" onclick="startFreshChat()" style="background: var(--accent); color: white; border-radius: 14px; margin-bottom: 20px;">➕ Start New Chat</button>
+        
+        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin: 15px 0 10px 10px;">Recent Conversations</div>
+        <div id="recent-chats-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px; padding-right: 5px;">
+           <!-- Dynamic Sessions List -->
+        </div>
+
+        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin: 15px 0 10px 10px;">Navigation</div>
+        <button class="nav-btn" id="btn-chat-main" onclick="showView('chat')">💬 Current Advisor AI</button>
+        <button class="nav-btn" id="btn-chat-logs" onclick="showView('chat-logs')">📜 Chat Records</button>
+        <button class="nav-btn" id="btn-appointment" onclick="showView('appointment')">📅 Appointments</button>
+        <button class="nav-btn" id="btn-analytics" onclick="showView('analytics')">📊 Student Insights</button>
       </nav>
 
-
-      <div class="sidebar-footer">
-        <div class="status-dot"></div>
-        <span>System Active</span>
+      <div class="sidebar-footer" style="margin-top: auto; display: flex; flex-direction: column; gap: 8px;">
+        <button class="nav-btn" onclick="location.href='/admin.html'" style="font-size: 12px; border-color: transparent;">⚙️ Admin Control</button>
+        <button class="nav-btn" onclick="clearSession()" style="opacity: 0.7;">🔒 Logout</button>
       </div>
     </aside>
 
-    <!-- MODULE: Main Application Content -->
     <main class="main-content">
-
-      <!-- SUB-MODULE: Chat Interface View -->
+      
+      <!-- VIEW: Chat -->
       <div id="view-chat" class="view active">
-        <div class="view-header">
+        <div class="view-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
           <div>
-            <h1>Academic Advisor</h1>
-            <p>Explore courses, careers, and academic resources</p>
+            <h1>AI Academic Advisor</h1>
+            <p>Real-time guidance and appointment scheduling</p>
           </div>
-          <button class="clear-btn" onclick="clearChat()">Clear Session</button>
+          <button class="nav-btn" onclick="clearChatHistory()" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.2); font-size: 11px;">🗑️ Clear Memory</button>
         </div>
-
-        <div class="chat-container">
-          <div class="chat-messages" id="chat-messages">
-            <!-- Initial welcome message generated on load -->
-            <div class="message bot-message">
-              <div class="avatar bot-avatar">🤖</div>
-              <div class="bubble">
-                <p>Hello, What is your name ?</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Quick access interaction chips -->
-          <div class="quick-chips" id="quick-chips">
-            <button class="chip" onclick="sendQuick('Hi, I am ')">👋 Introduce Myself</button>
-            <button class="chip" onclick="sendQuick('What courses should I take for AI/ML?')">🤖 AI/ML Career</button>
-            <button class="chip" onclick="sendQuick('How to prepare for campus placements?')">💼 Placement Tips</button>
-            <button class="chip" onclick="sendQuick('Give me study tips for exams')">📝 Study Guide</button>
-            <button class="chip" onclick="sendQuick('book appointment')">📅 Schedule Meeting</button>
-          </div>
-
-          <!-- User input area -->
-          <div class="chat-input-area">
-            <textarea id="user-input" placeholder="Ask your academic query..." rows="1" onkeydown="handleKey(event)"
-              oninput="autoResize(this)"></textarea>
-            <button class="send-btn" onclick="sendMessage()" id="send-btn">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <line x1="22" y1="2" x2="11" y2="13"></line>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-              </svg>
-            </button>
-          </div>
+        <div id="chat-messages" class="chat-container"></div>
+        <div id="suggestion-chips" class="chips-container"></div>
+        <div class="input-area">
+          <textarea id="user-input" placeholder="Ask about courses, stress, or book an appointment..." rows="1"></textarea>
+          <button class="send-btn" onclick="sendMessage()">➤</button>
         </div>
       </div>
 
-      <!-- SUB-MODULE: Appointment Scheduling View -->
+      <!-- VIEW: Chat Logs (ARCHIVE) -->
+      <div id="view-chat-logs" class="view">
+        <div class="view-header">
+          <h1>Conversation Archives</h1>
+          <p>Review your previous interactions and academic advice</p>
+        </div>
+        <div id="logs-container" class="chat-container" style="border: 1px solid var(--border); padding: 20px; border-radius: 20px;">
+          <!-- Dynamic -->
+        </div>
+      </div>
+
+      <!-- VIEW: Appointment -->
       <div id="view-appointment" class="view">
         <div class="view-header">
-          <div>
-            <h1>Book Appointment</h1>
-            <p>Connect with a faculty advisor for personalized guidance</p>
-          </div>
+          <h1>Schedule a Session</h1>
+          <p>Book detailed 1-on-1 guidance with academic experts</p>
+        </div>
+        <div class="booking-card" style="max-width: 600px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+           <div style="grid-column: span 2;">
+             <label style="font-size: 12px; opacity: 0.7;">Full Name</label>
+             <input type="text" id="appt-name" placeholder="John Doe" style="width: 100%; padding: 12px; background: var(--surface2); border: 1px solid var(--border); color: white; border-radius: 10px; margin-top: 5px;" />
+           </div>
+           <div>
+             <label style="font-size: 12px; opacity: 0.7;">Email Address</label>
+             <input type="email" id="appt-email" placeholder="john@example.com" style="width: 100%; padding: 12px; background: var(--surface2); border: 1px solid var(--border); color: white; border-radius: 10px; margin-top: 5px;" />
+           </div>
+           <div>
+             <label style="font-size: 12px; opacity: 0.7;">Phone Number</label>
+             <input type="tel" id="appt-phone" placeholder="+91 0000000000" style="width: 100%; padding: 12px; background: var(--surface2); border: 1px solid var(--border); color: white; border-radius: 10px; margin-top: 5px;" />
+           </div>
+           <div>
+             <label style="font-size: 12px; opacity: 0.7;">Department</label>
+             <select id="appt-dept" style="width: 100%; padding: 12px; background: var(--surface2); border: 1px solid var(--border); color: white; border-radius: 10px; margin-top: 5px;">
+               <option value="Computer Science">Computer Science</option>
+               <option value="Mechanical Engineering">Mechanical Engineering</option>
+               <option value="Business Administration">Business Administration</option>
+               <option value="Psychology">Psychology</option>
+             </select>
+           </div>
+           <div>
+             <label style="font-size: 12px; opacity: 0.7;">Year of Study</label>
+             <select id="appt-year" style="width: 100%; padding: 12px; background: var(--surface2); border: 1px solid var(--border); color: white; border-radius: 10px; margin-top: 5px;">
+               <option value="1st Year">1st Year</option>
+               <option value="2nd Year">2nd Year</option>
+               <option value="3rd Year">3rd Year</option>
+               <option value="Final Year">Final Year</option>
+             </select>
+           </div>
+           <div>
+             <label style="font-size: 12px; opacity: 0.7;">Date</label>
+             <input type="date" id="appt-date" style="width: 100%; padding: 12px; background: var(--surface2); border: 1px solid var(--border); color: white; border-radius: 10px; margin-top: 5px;" />
+           </div>
+           <div>
+             <label style="font-size: 12px; opacity: 0.7;">Time Slot</label>
+             <select id="appt-time" style="width: 100%; padding: 12px; background: var(--surface2); border: 1px solid var(--border); color: white; border-radius: 10px; margin-top: 5px;">
+               <option value="10:00 AM">Monday 10:00 AM</option>
+               <option value="02:00 PM">Wednesday 02:00 PM</option>
+               <option value="11:00 AM">Friday 11:00 AM</option>
+             </select>
+           </div>
+           <div style="grid-column: span 2;">
+             <label style="font-size: 12px; opacity: 0.7;">Reason for Guidance</label>
+             <textarea id="appt-reason" placeholder="Briefly describe your concern..." rows="2" style="width: 100%; padding: 12px; background: var(--surface2); border: 1px solid var(--border); color: white; border-radius: 10px; margin-top: 5px;"></textarea>
+           </div>
+           <button class="book-btn" onclick="submitAppointment()" style="grid-column: span 2; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 600; margin-top: 10px;">Confirm & Book Appointment</button>
+           <div id="appt-status" style="grid-column: span 2; margin-top: 10px; text-align: center;"></div>
         </div>
 
-        <div class="appointment-grid">
-          <!-- Booking Form -->
-          <div class="appointment-card">
-            <h3>Schedule New Meeting</h3>
-            <div class="booking-form">
-              <input type="text" id="appt-name" placeholder="Your Full Name" />
-              <input type="email" id="appt-email" placeholder="Your Email Address" />
-              <div class="form-row">
-                <input type="date" id="appt-date" />
-                <select id="appt-time">
-                  <option value="">Select Slot</option>
-                  <option value="10:00 AM">Monday 10:00 AM</option>
-                  <option value="02:00 PM">Wednesday 02:00 PM</option>
-                  <option value="11:00 AM">Friday 11:00 AM</option>
-                </select>
-              </div>
-
-              <textarea id="appt-reason" placeholder="Reason for Appointment (e.g., Career Guidance)" rows="3"></textarea>
-              <button class="book-btn" onclick="submitAppointment()">Confirm Appointment</button>
-              <div id="appt-status" class="appt-status"></div>
-            </div>
-          </div>
-
-          <!-- Appointments List -->
-          <div class="appointment-card">
-            <h3>Upcoming Appointments</h3>
-            <div class="appointments-list" id="appointments-list">
-              <!-- Dynamically populated from MongoDB -->
-              <p class="loading-text">Loading appointments...</p>
-            </div>
+        <div class="data-card" style="margin-top: 40px; background: var(--surface2); padding: 24px; border-radius: 20px; border: 1px solid var(--border);">
+          <h3>🗓️ My Scheduled Sessions</h3>
+          <div id="student-appt-list" style="margin-top: 15px; display: flex; flex-direction: column; gap: 12px;">
+            <p style="opacity: 0.5; font-size: 13px;">No active sessions found.</p>
           </div>
         </div>
       </div>
 
-
-      <!-- SUB-MODULE: Quick Topics Resource View -->
-      <div id="view-courses" class="view">
-        <div class="view-header">
-          <div>
-            <h1>Quick Topics</h1>
-            <p>Access predefined academic guidance modules</p>
-          </div>
-        </div>
-
-        <div class="topics-grid">
-          <div class="topic-card" onclick="askTopic('What are the best courses for Web Development career?')">
-            <span class="topic-icon">🌐</span>
-            <h3>Web Development</h3>
-            <p>Curated paths for full-stack mastery</p>
-          </div>
-          <div class="topic-card"
-            onclick="askTopic('What courses should I study for Artificial Intelligence and Machine Learning?')">
-            <span class="topic-icon">🤖</span>
-            <h3>AI & Machine Learning</h3>
-            <p>Foundations of data science and neural nets</p>
-          </div>
-          <div class="topic-card" onclick="askTopic('How to prepare for campus placements and technical interviews?')">
-            <span class="topic-icon">💼</span>
-            <h3>Campus Placements</h3>
-            <p>Interview strategies and resume building</p>
-          </div>
-          <div class="topic-card" onclick="askTopic('What is the best way to prepare for semester exams?')">
-            <span class="topic-icon">📝</span>
-            <h3>Exam Preparation</h3>
-            <p>Time management and effective study habits</p>
-          </div>
-          <div class="topic-card" onclick="askTopic('How to find and apply for good internships as a student?')">
-            <span class="topic-icon">🚀</span>
-            <h3>Internships</h3>
-            <p>Gateway to professional industry experience</p>
-          </div>
-          <div class="topic-card"
-            onclick="askTopic('What are career options after completing a Computer Science degree?')">
-            <span class="topic-icon">🎯</span>
-            <h3>Career Paths</h3>
-            <p>Diversified options for post-graduation</p>
-          </div>
-      <!-- SUB-MODULE: Analytics Hub View -->
+      <!-- VIEW: Analytics -->
       <div id="view-analytics" class="view">
         <div class="view-header">
-          <div>
-            <h1>Insights Hub</h1>
-            <p>Real-time analytics on academic trends and student engagement</p>
-          </div>
+          <h1>Student Insights</h1>
+          <p>Overview of academic trends and priority cases</p>
         </div>
-
-        <div class="analytics-grid">
-          <div class="analytics-card">
-            <h3>Popular Career Streams</h3>
-            <div class="chart-container-ui">
-              <canvas id="trendsChart"></canvas>
-            </div>
+        <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px;">
+          <div class="data-card" style="background: var(--surface2); padding: 24px; border-radius: 20px; border: 1px solid var(--border);">
+            <h3>Interaction Trends</h3>
+            <canvas id="trendsChart" style="margin-top: 20px;"></canvas>
           </div>
-          <div class="analytics-card">
-            <h3>Sentiment Summary</h3>
-            <div id="sentiment-stats" class="sentiment-stats">
-              <div class="stat-item">
-                <span class="stat-val" id="total-queries">0</span>
-                <span class="stat-label">Total Queries</span>
-              </div>
-              <div class="stat-item high-priority">
-                <span class="stat-val" id="priority-cases">0</span>
-                <span class="stat-label">Urgent Cases</span>
-              </div>
+          <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="data-card" style="background: var(--surface2); padding: 24px; border-radius: 20px; border: 1px solid var(--border); text-align: center;">
+              <div id="total-queries" style="font-size: 48px; font-weight: 700; color: var(--accent);">0</div>
+              <p>Total Interactions</p>
+            </div>
+            <div class="data-card" style="background: var(--surface2); padding: 24px; border-radius: 20px; border: 1px solid var(--border); text-align: center;">
+              <div id="priority-cases" style="font-size: 48px; font-weight: 700; color: #ef4444;">0</div>
+              <p>Urgent Support Required</p>
             </div>
           </div>
         </div>
       </div>
+
     </main>
   </div>
 
-  <!-- MODULE: Script Injection -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="script.js"></script>
+  <script src="js/script.js"></script>
 </body>
-
-
 </html>
