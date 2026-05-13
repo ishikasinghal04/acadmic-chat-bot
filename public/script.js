@@ -1,317 +1,184 @@
 /**
- * MODULE: Frontend Logic & State Management
- * This file handles the UI interactions, chat message processing, 
- * and API communication for the Academic Advisor Chatbot.
+ * MODULE: AcadBot Frontend Logic
+ * Handles real-time chat, appointment booking, and analytics dashboard.
  */
 
-// MODULE: Application State
-let chatHistory = JSON.parse(localStorage.getItem("chat_history")) || [];
-let isLoading = false;
+let studentId = null;
+let chatHistory = [];
+let trendsChart = null;
 
-// Initializing the application and loading saved chat history
-window.onload = () => {
-  if (chatHistory.length > 0) {
-    const container = document.getElementById("chat-messages");
-    container.innerHTML = "";
-    
-    chatHistory.forEach(msg => {
-      appendMessage(msg.role === "assistant" ? "bot" : "user", msg.content, false);
-    });
-  }
-};
+// MODULE: Identity Management
+function login() {
+  const idInput = document.getElementById("student-id-input").value.trim();
+  if (!idInput) return alert("Please enter a valid Student ID");
+  
+  studentId = idInput;
+  localStorage.setItem("stu_id", studentId);
+  document.getElementById("login-overlay").style.display = "none";
+  document.getElementById("display-student-id").textContent = "ID: " + studentId;
+  
+  // Initial Load
+  loadSession();
+}
 
-// MODULE: Navigation & View Switching
-// Handles switching between Chat, Appointment, and Quick Topics views
-function showView(viewName) {
-  document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
-  document.querySelectorAll(".nav-btn").forEach((b) => b.classList.remove("active"));
-
-  document.getElementById("view-" + viewName).classList.add("active");
-  event.currentTarget.classList.add("active");
-
-  // Fetch appointments if switching to appointment view
-  if (viewName === 'appointment') {
-    fetchAppointments();
+function loadSession() {
+  const savedId = localStorage.getItem("stu_id");
+  if (savedId) {
+    studentId = savedId;
+    document.getElementById("login-overlay").style.display = "none";
+    document.getElementById("display-student-id").textContent = "ID: " + studentId;
   }
 }
 
-// ... (other functions remain)
+window.onload = loadSession;
 
-// MODULE: Custom Appointment System
+// MODULE: Navigation
+function showView(viewName) {
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+  
+  document.getElementById("view-" + viewName).classList.add("active");
+  document.getElementById("btn-" + viewName).classList.add("active");
+  
+  if (viewName === "appointment") fetchAppointments();
+  if (viewName === "analytics") loadAnalytics();
+}
+
+// MODULE: Chat Logic
+async function sendMessage() {
+  const input = document.getElementById("user-input");
+  const text = input.value.trim();
+  if (!text) return;
+
+  addMessage("user", text);
+  input.value = "";
+  
+  const typing = showTyping();
+  
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text, history: chatHistory, studentId })
+    });
+    
+    const data = await res.json();
+    typing.remove();
+    
+    addMessage("assistant", data.response);
+    chatHistory.push({ role: "user", content: text });
+    chatHistory.push({ role: "assistant", content: data.response });
+    
+  } catch (err) {
+    typing.remove();
+    addMessage("assistant", "Sorry, I am facing a connection issue.");
+  }
+}
+
+function addMessage(role, content) {
+  const container = document.getElementById("chat-messages");
+  const msgDiv = document.createElement("div");
+  msgDiv.className = `message ${role}-message`;
+  
+  msgDiv.innerHTML = `
+    <div class="avatar ${role}-avatar">${role === 'user' ? '👤' : '🤖'}</div>
+    <div class="bubble">${content}</div>
+  `;
+  
+  container.appendChild(msgDiv);
+  container.scrollTop = container.scrollHeight;
+}
+
+function showTyping() {
+  const container = document.getElementById("chat-messages");
+  const typing = document.createElement("div");
+  typing.className = "message bot-message typing";
+  typing.innerHTML = `<div class="bubble">Typing...</div>`;
+  container.appendChild(typing);
+  return typing;
+}
+
+// MODULE: Appointments
 async function submitAppointment() {
-  const name = document.getElementById("appt-name").value.trim();
-  const email = document.getElementById("appt-email").value.trim();
+  const name = document.getElementById("appt-name").value;
+  const email = document.getElementById("appt-email").value;
   const date = document.getElementById("appt-date").value;
   const time = document.getElementById("appt-time").value;
-  const reason = document.getElementById("appt-reason").value.trim();
-  const statusEl = document.getElementById("appt-status");
-
-  if (!name || !email || !date || !time || !reason) {
-    statusEl.className = "appt-status error";
-    statusEl.textContent = "⚠️ Please fill all fields.";
-    return;
-  }
+  const reason = document.getElementById("appt-reason").value;
+  const status = document.getElementById("appt-status");
 
   try {
     const res = await fetch("/api/appointments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, date, time, reason }),
+      body: JSON.stringify({ name, email, date, time, reason, studentId })
     });
-
+    
     const data = await res.json();
-
-    if (data.message === "Success") {
-      statusEl.className = "appt-status success";
-      statusEl.textContent = "✅ Appointment booked successfully!";
-      // Reset form
-      document.getElementById("appt-name").value = "";
-      document.getElementById("appt-email").value = "";
-      document.getElementById("appt-date").value = "";
-      document.getElementById("appt-time").value = "";
-      document.getElementById("appt-reason").value = "";
-      
-      // Refresh list
+    if (res.ok) {
+      status.className = "appt-status success";
+      status.textContent = "Confirmed! Slot reserved.";
       fetchAppointments();
     } else {
-      statusEl.className = "appt-status error";
-      statusEl.textContent = "⚠️ Error: " + data.error;
+      status.className = "appt-status error";
+      status.textContent = data.error;
     }
   } catch (err) {
-    statusEl.className = "appt-status error";
-    statusEl.textContent = "⚠️ Connection error.";
+    status.className = "appt-status error";
+    status.textContent = "Server Error.";
   }
 }
 
 async function fetchAppointments() {
-  const listEl = document.getElementById("appointments-list");
+  const list = document.getElementById("appointments-list");
+  const res = await fetch("/api/appointments");
+  const appts = await res.json();
   
-  try {
-    const res = await fetch("/api/appointments");
-    const appointments = await res.json();
-
-    if (appointments.length === 0) {
-      listEl.innerHTML = '<p class="no-data">No appointments scheduled yet.</p>';
-      return;
-    }
-
-    listEl.innerHTML = appointments.map(appt => `
-      <div class="appt-item">
-        <div class="appt-info">
-          <h4>${appt.name}</h4>
-          <p>${appt.reason}</p>
-        </div>
-        <div class="appt-date-pill">
-          ${new Date(appt.date).toLocaleDateString()} at ${appt.time}
-        </div>
+  list.innerHTML = appts.map(a => `
+    <div class="appt-item">
+      <div class="appt-info">
+        <h4>${a.name}</h4>
+        <p>${a.reason}</p>
       </div>
-    `).join("");
-
-  } catch (err) {
-    listEl.innerHTML = '<p class="no-data">⚠️ Failed to load appointments.</p>';
-  }
+      <div class="appt-date-pill">${a.date} | ${a.time}</div>
+    </div>
+  `).join("");
 }
 
-
-// MODULE: Chat Input Processing
-// Handles keyboard events (Enter key)
-function handleKey(e) {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
-  }
-}
-
-// Automatically adjusts textarea height based on content
-function autoResize(el) {
-  el.style.height = "auto";
-  el.style.height = Math.min(el.scrollHeight, 120) + "px";
-}
-
-// Processes messages sent from quick chips or suggested chips
-function sendQuick(msg) {
-  document.getElementById("user-input").value = msg;
-  sendMessage();
-}
-
-// Switches to chat view and triggers a message
-function askTopic(msg) {
-  document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
-  document.querySelectorAll(".nav-btn").forEach((b) => b.classList.remove("active"));
-  document.getElementById("view-chat").classList.add("active");
-  document.querySelector(".nav-btn").classList.add("active");
-
-  document.getElementById("user-input").value = msg;
-  sendMessage();
-}
-
-// MODULE: Chat Engine (API Integration)
-// Orchestrates sending messages to the backend and handling responses
-async function sendMessage() {
-  if (isLoading) return;
-
-  const input = document.getElementById("user-input");
-  const message = input.value.trim();
-  if (!message) return;
-
-  // Intercepting specific keywords for localized UI handling
-  if (message.toLowerCase().includes("book appointment")) {
-    appendMessage("user", message);
-    appendMessage(
-      "bot",
-      '📅 Sure! Click on <strong>"Book Appointment"</strong> in the sidebar to schedule a meeting.'
-    );
-    input.value = "";
-    input.style.height = "auto";
-    return;
-  }
-
-  appendMessage("user", message);
-  input.value = "";
-  input.style.height = "auto";
-
-  const typingId = showTyping();
-  isLoading = true;
-  document.getElementById("send-btn").disabled = true;
-
+// MODULE: Analytics Hub
+async function loadAnalytics() {
   try {
-    const response = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message: message,
-        history: chatHistory,
-      }),
-    });
-
-    const data = await response.json();
-    removeTyping(typingId);
-
-    if (data.error) {
-      appendMessage("bot", "⚠️ System Error: " + data.error);
-    } else {
-      appendMessage("bot", data.reply);
-      chatHistory.push({ role: "user", content: message });
-      chatHistory.push({ role: "assistant", content: data.reply });
-      localStorage.setItem("chat_history", JSON.stringify(chatHistory));
-    }
-  } catch (err) {
-    removeTyping(typingId);
-    appendMessage("bot", "⚠️ Connection failed. Please check your internet.");
-  }
-
-  isLoading = false;
-  document.getElementById("send-btn").disabled = false;
-}
-
-// MODULE: UI Rendering Components
-// Appends messages to the chat interface and handles formatting
-function appendMessage(role, text, saveToHistory = true) {
-  const container = document.getElementById("chat-messages");
-
-  const msgDiv = document.createElement("div");
-  msgDiv.className = `message ${role === "user" ? "user-message" : "bot-message"}`;
-
-  const avatar = document.createElement("div");
-  avatar.className = `avatar ${role === "user" ? "user-avatar" : "bot-avatar"}`;
-  avatar.textContent = role === "user" ? "👤" : "🤖";
-
-  const contentDiv = document.createElement("div");
-  contentDiv.className = "message-content";
-
-  const bubble = document.createElement("div");
-  bubble.className = "bubble";
-  
-  let mainText = text;
-  let suggestions = [];
-  
-  // Parsing suggested response chips from the bot's reply
-  if (role === "bot") {
-    const parts = text.split("[SUGGESTED]:");
-    mainText = parts[0].trim();
-    if (parts.length > 1) {
-      suggestions = parts.slice(1).map(s => s.trim().split("\n")[0]);
-    }
-  }
-
-  bubble.innerHTML = formatText(mainText);
-  contentDiv.appendChild(bubble);
-
-  // Rendering suggestion chips
-  if (suggestions.length > 0) {
-    const suggestionsDiv = document.createElement("div");
-    suggestionsDiv.className = "answer-suggestions";
+    const res = await fetch("/api/analytics/trends");
+    const data = await res.json();
     
-    suggestions.forEach(q => {
-      const chip = document.createElement("button");
-      chip.className = "suggestion-chip";
-      chip.textContent = q;
-      chip.onclick = () => sendQuick(q);
-      suggestionsDiv.appendChild(chip);
+    document.getElementById("total-queries").textContent = data.stats.reduce((a, b) => a + b.count, 0);
+    document.getElementById("priority-cases").textContent = data.priorityCount;
+    
+    const labels = data.stats.map(s => s._id);
+    const counts = data.stats.map(s => s.count);
+    
+    if (trendsChart) trendsChart.destroy();
+    
+    const ctx = document.getElementById('trendsChart').getContext('2d');
+    trendsChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: counts,
+          backgroundColor: ['#4f8ef7', '#7c5af7', '#22c55e', '#f59e0b', '#ef4444'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        plugins: { legend: { display: true, position: 'bottom', labels: { color: '#e8edf5' } } }
+      }
     });
     
-    contentDiv.appendChild(suggestionsDiv);
+  } catch (err) {
+    console.error("Analytics failed", err);
   }
-
-  msgDiv.appendChild(avatar);
-  msgDiv.appendChild(contentDiv);
-  container.appendChild(msgDiv);
-  container.scrollTop = container.scrollHeight;
 }
 
-// Formats markdown-like syntax into HTML
-function formatText(text) {
-  return text
-    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.*?)\*/g, "<em>$1</em>")
-    .replace(/\n\n/g, "</p><p>")
-    .replace(/\n- /g, "<br>• ")
-    .replace(/\n\d\. /g, (m) => "<br>" + m.trim() + " ")
-    .replace(/\n/g, "<br>");
-}
-
-// MODULE: Visual Indicators
-// Shows a typing animation while the AI is processing
-function showTyping() {
-  const container = document.getElementById("chat-messages");
-  const id = "typing-" + Date.now();
-
-  const msgDiv = document.createElement("div");
-  msgDiv.className = "message bot-message";
-  msgDiv.id = id;
-
-  const avatar = document.createElement("div");
-  avatar.className = "avatar bot-avatar";
-  avatar.textContent = "🤖";
-
-  const bubble = document.createElement("div");
-  bubble.className = "bubble typing-bubble";
-  bubble.innerHTML = "<span></span><span></span><span></span>";
-
-  msgDiv.appendChild(avatar);
-  msgDiv.appendChild(bubble);
-  container.appendChild(msgDiv);
-  container.scrollTop = container.scrollHeight;
-
-  return id;
-}
-
-function removeTyping(id) {
-  const el = document.getElementById(id);
-  if (el) el.remove();
-}
-
-// Resets the chat interface and history
-function clearChat() {
-  chatHistory = [];
-  localStorage.removeItem("chat_history");
-  const container = document.getElementById("chat-messages");
-  container.innerHTML = `
-    <div class="message bot-message">
-      <div class="avatar bot-avatar">🤖</div>
-      <div class="bubble">
-        <p>Hello, What is your name ?</p>
-      </div>
-    </div>`;
-}
-
+// Helper: Auto-resize textarea
+function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }

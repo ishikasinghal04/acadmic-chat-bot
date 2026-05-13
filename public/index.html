@@ -14,10 +14,19 @@
 </head>
 
 <body>
+  <!-- MODULE: Login Overlay -->
+  <div id="login-overlay" class="login-overlay">
+    <div class="login-card">
+      <span class="logo-icon">🎓</span>
+      <h2>Welcome to AcadBot</h2>
+      <p>Please enter your Student ID to continue</p>
+      <input type="text" id="student-id-input" placeholder="e.g., STU12345" />
+      <button onclick="login()">Enter Portal</button>
+    </div>
+  </div>
+
   <!-- MODULE: UI Background Design -->
-  <div class="bg-blob blob-1"></div>
-  <div class="bg-blob blob-2"></div>
-  <div class="bg-blob blob-3"></div>
+  <!-- ... (blobs remain) -->
 
   <div class="app-wrapper">
     <!-- MODULE: Sidebar Navigation -->
@@ -27,22 +36,26 @@
           <span class="logo-icon">🎓</span>
           <div>
             <div class="logo-title">AcadBot</div>
-            <div class="logo-sub">Student Portal</div>
+            <div class="logo-sub" id="display-student-id">Student Portal</div>
           </div>
         </div>
       </div>
 
       <nav class="sidebar-nav">
-        <button class="nav-btn active" onclick="showView('chat')">
+        <button class="nav-btn active" id="btn-chat" onclick="showView('chat')">
           <span>💬</span> Advisor Chat
         </button>
-        <button class="nav-btn" onclick="showView('appointment')">
+        <button class="nav-btn" id="btn-appointment" onclick="showView('appointment')">
           <span>📅</span> Appointments
         </button>
-        <button class="nav-btn" onclick="showView('courses')">
+        <button class="nav-btn" id="btn-courses" onclick="showView('courses')">
           <span>📚</span> Quick Guide
         </button>
+        <button class="nav-btn" id="btn-analytics" onclick="showView('analytics')">
+          <span>📊</span> Insights Hub
+        </button>
       </nav>
+
 
       <div class="sidebar-footer">
         <div class="status-dot"></div>
@@ -115,8 +128,14 @@
               <input type="email" id="appt-email" placeholder="Your Email Address" />
               <div class="form-row">
                 <input type="date" id="appt-date" />
-                <input type="time" id="appt-time" />
+                <select id="appt-time">
+                  <option value="">Select Slot</option>
+                  <option value="10:00 AM">Monday 10:00 AM</option>
+                  <option value="02:00 PM">Wednesday 02:00 PM</option>
+                  <option value="11:00 AM">Friday 11:00 AM</option>
+                </select>
               </div>
+
               <textarea id="appt-reason" placeholder="Reason for Appointment (e.g., Career Guidance)" rows="3"></textarea>
               <button class="book-btn" onclick="submitAppointment()">Confirm Appointment</button>
               <div id="appt-status" class="appt-status"></div>
@@ -177,13 +196,44 @@
             <h3>Career Paths</h3>
             <p>Diversified options for post-graduation</p>
           </div>
+      <!-- SUB-MODULE: Analytics Hub View -->
+      <div id="view-analytics" class="view">
+        <div class="view-header">
+          <div>
+            <h1>Insights Hub</h1>
+            <p>Real-time analytics on academic trends and student engagement</p>
+          </div>
+        </div>
+
+        <div class="analytics-grid">
+          <div class="analytics-card">
+            <h3>Popular Career Streams</h3>
+            <div class="chart-container-ui">
+              <canvas id="trendsChart"></canvas>
+            </div>
+          </div>
+          <div class="analytics-card">
+            <h3>Sentiment Summary</h3>
+            <div id="sentiment-stats" class="sentiment-stats">
+              <div class="stat-item">
+                <span class="stat-val" id="total-queries">0</span>
+                <span class="stat-label">Total Queries</span>
+              </div>
+              <div class="stat-item high-priority">
+                <span class="stat-val" id="priority-cases">0</span>
+                <span class="stat-label">Urgent Cases</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </main>
   </div>
 
   <!-- MODULE: Script Injection -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="script.js"></script>
 </body>
+
 
 </html>
