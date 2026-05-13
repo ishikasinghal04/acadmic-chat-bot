@@ -28,7 +28,90 @@ function showView(viewName) {
 
   document.getElementById("view-" + viewName).classList.add("active");
   event.currentTarget.classList.add("active");
+
+  // Fetch appointments if switching to appointment view
+  if (viewName === 'appointment') {
+    fetchAppointments();
+  }
 }
+
+// ... (other functions remain)
+
+// MODULE: Custom Appointment System
+async function submitAppointment() {
+  const name = document.getElementById("appt-name").value.trim();
+  const email = document.getElementById("appt-email").value.trim();
+  const date = document.getElementById("appt-date").value;
+  const time = document.getElementById("appt-time").value;
+  const reason = document.getElementById("appt-reason").value.trim();
+  const statusEl = document.getElementById("appt-status");
+
+  if (!name || !email || !date || !time || !reason) {
+    statusEl.className = "appt-status error";
+    statusEl.textContent = "⚠️ Please fill all fields.";
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/appointments", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, date, time, reason }),
+    });
+
+    const data = await res.json();
+
+    if (data.message === "Success") {
+      statusEl.className = "appt-status success";
+      statusEl.textContent = "✅ Appointment booked successfully!";
+      // Reset form
+      document.getElementById("appt-name").value = "";
+      document.getElementById("appt-email").value = "";
+      document.getElementById("appt-date").value = "";
+      document.getElementById("appt-time").value = "";
+      document.getElementById("appt-reason").value = "";
+      
+      // Refresh list
+      fetchAppointments();
+    } else {
+      statusEl.className = "appt-status error";
+      statusEl.textContent = "⚠️ Error: " + data.error;
+    }
+  } catch (err) {
+    statusEl.className = "appt-status error";
+    statusEl.textContent = "⚠️ Connection error.";
+  }
+}
+
+async function fetchAppointments() {
+  const listEl = document.getElementById("appointments-list");
+  
+  try {
+    const res = await fetch("/api/appointments");
+    const appointments = await res.json();
+
+    if (appointments.length === 0) {
+      listEl.innerHTML = '<p class="no-data">No appointments scheduled yet.</p>';
+      return;
+    }
+
+    listEl.innerHTML = appointments.map(appt => `
+      <div class="appt-item">
+        <div class="appt-info">
+          <h4>${appt.name}</h4>
+          <p>${appt.reason}</p>
+        </div>
+        <div class="appt-date-pill">
+          ${new Date(appt.date).toLocaleDateString()} at ${appt.time}
+        </div>
+      </div>
+    `).join("");
+
+  } catch (err) {
+    listEl.innerHTML = '<p class="no-data">⚠️ Failed to load appointments.</p>';
+  }
+}
+
 
 // MODULE: Chat Input Processing
 // Handles keyboard events (Enter key)

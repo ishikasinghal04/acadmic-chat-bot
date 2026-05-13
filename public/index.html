@@ -106,13 +106,34 @@
           </div>
         </div>
 
-        <div class="calendly-container">
-          <!-- External Integration: Calendly Scheduling Widget -->
-          <div class="calendly-inline-widget" data-url="https://calendly.com/ishikasinghal66/30min"
-            style="min-width:320px;height:630px;"></div>
-          <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
+        <div class="appointment-grid">
+          <!-- Booking Form -->
+          <div class="appointment-card">
+            <h3>Schedule New Meeting</h3>
+            <div class="booking-form">
+              <input type="text" id="appt-name" placeholder="Your Full Name" />
+              <input type="email" id="appt-email" placeholder="Your Email Address" />
+              <div class="form-row">
+                <input type="date" id="appt-date" />
+                <input type="time" id="appt-time" />
+              </div>
+              <textarea id="appt-reason" placeholder="Reason for Appointment (e.g., Career Guidance)" rows="3"></textarea>
+              <button class="book-btn" onclick="submitAppointment()">Confirm Appointment</button>
+              <div id="appt-status" class="appt-status"></div>
+            </div>
+          </div>
+
+          <!-- Appointments List -->
+          <div class="appointment-card">
+            <h3>Upcoming Appointments</h3>
+            <div class="appointments-list" id="appointments-list">
+              <!-- Dynamically populated from MongoDB -->
+              <p class="loading-text">Loading appointments...</p>
+            </div>
+          </div>
         </div>
       </div>
+
 
       <!-- SUB-MODULE: Quick Topics Resource View -->
       <div id="view-courses" class="view">
