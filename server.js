@@ -9,6 +9,14 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
+// DB Middleware for Serverless
+app.use(async (req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    await connectDB();
+  }
+  next();
+});
+
 // MODULE: Professional Routing
 const chatRoutes = require("./routes/chat.routes");
 const apptRoutes = require("./routes/appointment.routes");
