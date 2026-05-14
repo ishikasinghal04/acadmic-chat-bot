@@ -292,21 +292,23 @@ async function submitAppointment() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ studentId, name, email, phone, department: dept, year, date, time, reason })
     });
+    const data = await res.json();
     if (res.ok) {
       status.innerHTML = "<span style='color:#10b981;'>✅ Appointment Booked Successfully!</span>";
       loadStudentAppointments();
       setTimeout(() => { status.innerHTML = ""; showView('chat'); }, 2000);
     } else {
-      status.innerHTML = "<span style='color:#ef4444;'>❌ Failed to book. Try again.</span>";
+      status.innerHTML = `<span style='color:#ef4444;'>❌ ${data.error || 'Failed to book'}. Try again.</span>`;
     }
   } catch(e) { status.innerHTML = "Error connecting to server."; }
 }
 
 async function loadStudentAppointments() {
   const container = document.getElementById("student-appt-list");
+  if (!studentId) return;
   container.innerHTML = "Loading...";
   try {
-    const res = await fetch(`/api/appointments/student/${studentId}`);
+    const res = await fetch(`/api/appointments?studentId=${studentId}`);
     const appts = await res.json();
     if (appts.length === 0) {
       container.innerHTML = `<p style="opacity:0.5; font-size:13px;">No active sessions found.</p>`;
