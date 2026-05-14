@@ -111,7 +111,9 @@ function showView(name) {
   document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
   const target = document.getElementById("view-" + name);
   if (target) target.style.display = "flex";
+  
   if (name === 'appointment') loadStudentAppointments();
+  if (name === 'analytics') loadAnalytics();
 }
 
 async function sendMessage() {
@@ -257,3 +259,98 @@ function toggleAuth(signup) {
 }
 
 function clearSession() { localStorage.clear(); location.reload(); }
+
+async function clearChatHistory() {
+  if(!confirm("Are you sure you want to clear this conversation?")) return;
+  try {
+    const res = await fetch(`/api/chat/session/${currentSessionId}`, { method: 'DELETE' });
+    if(res.ok) startFreshChat();
+  } catch(e) { console.error(e); }
+}
+
+async function submitAppointment() {
+  const name = document.getElementById("appt-name").value;
+  const email = document.getElementById("appt-email").value;
+  const phone = document.getElementById("appt-phone").value;
+  const dept = document.getElementById("appt-dept").value;
+  const year = document.getElementById("appt-year").value;
+  const date = document.getElementById("appt-date").value;
+  const time = document.getElementById("appt-time").value;
+  const reason = document.getElementById("appt-reason").value;
+
+  if (!name || !email || !date || !time) {
+    alert("Please fill in all required fields.");
+    return;
+  }
+
+  const status = document.getElementById("appt-status");
+  status.innerHTML = "Booking your session...";
+
+  try {
+    const res = await fetch("/api/appointments", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ studentId, name, email, phone, department: dept, year, date, time, reason })
+    });
+    if (res.ok) {
+      status.innerHTML = "<span style='color:#10b981;'>✅ Appointment Booked Successfully!</span>";
+      loadStudentAppointments();
+      setTimeout(() => { status.innerHTML = ""; showView('chat'); }, 2000);
+    } else {
+      status.innerHTML = "<span style='color:#ef4444;'>❌ Failed to book. Try again.</span>";
+    }
+  } catch(e) { status.innerHTML = "Error connecting to server."; }
+}
+
+async function loadStudentAppointments() {
+  const container = document.getElementById("student-appt-list");
+  container.innerHTML = "Loading...";
+  try {
+    const res = await fetch(`/api/appointments/student/${studentId}`);
+    const appts = await res.json();
+    if (appts.length === 0) {
+      container.innerHTML = `<p style="opacity:0.5; font-size:13px;">No active sessions found.</p>`;
+      return;
+    }
+    container.innerHTML = appts.map(a => `
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:15px; border-radius:12px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+          <span style="font-weight:600; font-size:14px; color:var(--accent);">📅 ${a.date} at ${a.time}</span>
+          <span style="font-size:10px; background:rgba(16,185,129,0.1); color:#10b981; padding:2px 8px; border-radius:20px;">CONFIRMED</span>
+        </div>
+        <p style="font-size:12px; opacity:0.7;">Reason: ${a.reason || 'General Counseling'}</p>
+      </div>
+    `).join('');
+  } catch(e) { container.innerHTML = "Failed to load."; }
+}
+
+async function loadAnalytics() {
+  try {
+    const res = await fetch(`/api/analytics?studentId=${studentId}`);
+    const data = await res.json();
+    document.getElementById("total-queries").textContent = data.totalQueries || 0;
+    document.getElementById("priority-cases").textContent = data.priorityCases || 0;
+    
+    if (trendsChart) trendsChart.destroy();
+    const ctx = document.getElementById('trendsChart').getContext('2d');
+    trendsChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: data.trends.labels,
+        datasets: [{
+          label: 'Interactions',
+          data: data.trends.data,
+          borderColor: '#4f46e5',
+          tension: 0.4,
+          fill: true,
+          backgroundColor: 'rgba(79, 70, 229, 0.1)'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { display: false } } }
+      }
+    });
+  } catch(e) { console.error("Analytics Load Fail:", e); }
+}
