@@ -190,3 +190,74 @@ body {
   transform: translateY(-5px);
   box-shadow: 0 10px 25px var(--accent-glow);
 }
+/* ── Forms & Dropdowns (Refined) ── */
+select, input, textarea {
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+select:focus, input:focus, textarea:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 10px var(--accent-glow);
+  outline: none;
+}
+
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 35px !important;
+}
+
+.booking-card {
+  background: var(--surface2);
+  padding: 30px;
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.booking-card label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.booking-card input, .booking-card select, .booking-card textarea {
+  width: 100%;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  color: white;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.booking-card input:hover, .booking-card select:hover, .booking-card textarea:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.book-btn {
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+.book-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px var(--accent-glow);
+  filter: brightness(1.1);
+}
+
+.data-card h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

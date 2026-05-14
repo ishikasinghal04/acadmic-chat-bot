@@ -24,12 +24,14 @@ app.use("/api/auth", authRoutes);
 
 const PORT = process.env.PORT || 3000;
 
-// Start server IMMEDIATELY
-app.listen(PORT, () => {
-  console.log(`\n  🚀 AcadBot Enterprise Live`);
-  console.log(`  📡 Portal: http://localhost:${PORT}`);
-  console.log(`  🛡️ Admin: http://localhost:${PORT}/admin.html\n`);
-  
-  // Connect DB in background
-  connectDB();
+// Database Connection & Server Start
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`\n  🚀 AcadBot Enterprise Live`);
+    console.log(`  📡 Portal: http://localhost:${PORT}`);
+    console.log(`  🛡️ Admin: http://localhost:${PORT}/admin.html\n`);
+  });
+}).catch(err => {
+  console.error("💥 Failed to start server due to DB connection failure.");
+  process.exit(1);
 });

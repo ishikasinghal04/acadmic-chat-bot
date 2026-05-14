@@ -122,10 +122,11 @@ async function sendMessage() {
   input.value = "";
   const typing = showTyping();
   try {
+    const provider = document.getElementById("model-selector").value;
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: text, studentId, sessionId: currentSessionId })
+      body: JSON.stringify({ message: text, studentId, sessionId: currentSessionId, provider })
     });
     const data = await res.json();
     typing.remove();
@@ -134,7 +135,7 @@ async function sendMessage() {
         currentSessionId = data.sessionId;
         loadSessions();
       }
-      renderResponse(data.response);
+      renderResponse(data.response, data.usage, data.provider);
     } else {
       appendMessage("assistant", "I'm sorry, I'm having a connection issue. Please try refreshing the page.");
     }
@@ -144,11 +145,11 @@ async function sendMessage() {
   }
 }
 
-function renderResponse(raw) {
+function renderResponse(raw, usage, provider) {
   const hasBookNow = raw.includes("[BOOK_NOW]");
   const chips = raw.match(/\[SUGGESTED\]:\s*([^[\n]+)/g);
   let cleanText = raw.replace(/\[SUGGESTED\]:\s*([^[\n]+)/g, '').replace(/\[BOOK_NOW\]/g, '').replace(/\[LOG:.*?\]/g, '').trim();
-  appendMessage("assistant", cleanText, hasBookNow);
+  appendMessage("assistant", cleanText, hasBookNow, usage, provider);
   const chipContainer = document.getElementById("suggestion-chips");
   chipContainer.innerHTML = "";
   if (chips) {
@@ -168,13 +169,21 @@ function parseMarkdown(text) {
   return html;
 }
 
-function appendMessage(role, content, showBookBtn = false) {
+function appendMessage(role, content, showBookBtn = false, usage = null, provider = null) {
   const container = document.getElementById("chat-messages");
   const div = document.createElement("div");
   div.className = `message ${role}-message`;
+  
+  let metaHtml = "";
+  if (role === "assistant") {
+    const providerName = provider || "AcadBot AI";
+    const tokens = usage && usage.totalTokenCount ? ` | ⚡ ${usage.totalTokenCount} tkn` : "";
+    metaHtml = `<div style="font-size:9px; opacity:0.5; margin-top:5px; text-align:right;">🤖 ${providerName}${tokens}</div>`;
+  }
+
   div.innerHTML = `
     <div class="avatar">${role === 'user' ? '👤' : '🤖'}</div>
-    <div class="bubble">${parseMarkdown(content)}${showBookBtn ? `<button onclick="showView('appointment')">📅 Book Consultation</button>` : ''}</div>
+    <div class="bubble">${parseMarkdown(content)}${showBookBtn ? `<button onclick="showView('appointment')">📅 Book Consultation</button>` : ''}${metaHtml}</div>
   `;
   container.appendChild(div);
   container.scrollTop = container.scrollHeight;

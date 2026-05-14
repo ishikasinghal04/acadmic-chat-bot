@@ -63,6 +63,17 @@
       </nav>
 
       <div class="sidebar-footer" style="margin-top: auto; display: flex; flex-direction: column; gap: 8px;">
+        <!-- 🤖 AI Engine Selector -->
+        <div style="padding: 12px; background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 5px; border: 1px solid rgba(255,255,255,0.05);">
+          <label style="font-size: 10px; opacity: 0.6; font-weight: 600; display: block; margin-bottom: 8px;">ACTIVE AI ENGINE:</label>
+          <select id="model-selector" style="width: 100%; background: var(--surface2); border: 1px solid var(--border); color: white; font-size: 11px; border-radius: 8px; padding: 6px; cursor: pointer; outline: none;">
+            <option value="auto">Auto-Intelligence</option>
+            <option value="groq">Groq Reasoning (GPT-OSS)</option>
+            <option value="gemini">Gemini 2.0 Flash</option>
+            <option value="openrouter">OpenRouter (Fallback)</option>
+          </select>
+        </div>
+
         <button class="nav-btn" onclick="location.href='/admin.html'" style="font-size: 12px; border-color: transparent;">⚙️ Admin Control</button>
         <button class="nav-btn" onclick="clearSession()" style="opacity: 0.7;">🔒 Logout</button>
       </div>
@@ -106,20 +117,20 @@
         </div>
         <div class="booking-card" style="max-width: 600px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
            <div style="grid-column: span 2;">
-             <label style="font-size: 12px; opacity: 0.7;">Full Name</label>
-             <input type="text" id="appt-name" placeholder="John Doe" style="width: 100%; padding: 12px; background: var(--surface2); border: 1px solid var(--border); color: white; border-radius: 10px; margin-top: 5px;" />
+             <label>Full Name</label>
+             <input type="text" id="appt-name" placeholder="John Doe" />
            </div>
            <div>
-             <label style="font-size: 12px; opacity: 0.7;">Email Address</label>
-             <input type="email" id="appt-email" placeholder="john@example.com" style="width: 100%; padding: 12px; background: var(--surface2); border: 1px solid var(--border); color: white; border-radius: 10px; margin-top: 5px;" />
+             <label>Email Address</label>
+             <input type="email" id="appt-email" placeholder="john@example.com" />
            </div>
            <div>
-             <label style="font-size: 12px; opacity: 0.7;">Phone Number</label>
-             <input type="tel" id="appt-phone" placeholder="+91 0000000000" style="width: 100%; padding: 12px; background: var(--surface2); border: 1px solid var(--border); color: white; border-radius: 10px; margin-top: 5px;" />
+             <label>Phone Number</label>
+             <input type="tel" id="appt-phone" placeholder="+91 0000000000" />
            </div>
            <div>
-             <label style="font-size: 12px; opacity: 0.7;">Department</label>
-             <select id="appt-dept" style="width: 100%; padding: 12px; background: var(--surface2); border: 1px solid var(--border); color: white; border-radius: 10px; margin-top: 5px;">
+             <label>Department</label>
+             <select id="appt-dept">
                <option value="Computer Science">Computer Science</option>
                <option value="Mechanical Engineering">Mechanical Engineering</option>
                <option value="Business Administration">Business Administration</option>
@@ -127,8 +138,8 @@
              </select>
            </div>
            <div>
-             <label style="font-size: 12px; opacity: 0.7;">Year of Study</label>
-             <select id="appt-year" style="width: 100%; padding: 12px; background: var(--surface2); border: 1px solid var(--border); color: white; border-radius: 10px; margin-top: 5px;">
+             <label>Year of Study</label>
+             <select id="appt-year">
                <option value="1st Year">1st Year</option>
                <option value="2nd Year">2nd Year</option>
                <option value="3rd Year">3rd Year</option>
@@ -136,20 +147,20 @@
              </select>
            </div>
            <div>
-             <label style="font-size: 12px; opacity: 0.7;">Date</label>
-             <input type="date" id="appt-date" style="width: 100%; padding: 12px; background: var(--surface2); border: 1px solid var(--border); color: white; border-radius: 10px; margin-top: 5px;" />
+             <label>Date</label>
+             <input type="date" id="appt-date" />
            </div>
            <div>
-             <label style="font-size: 12px; opacity: 0.7;">Time Slot</label>
-             <select id="appt-time" style="width: 100%; padding: 12px; background: var(--surface2); border: 1px solid var(--border); color: white; border-radius: 10px; margin-top: 5px;">
+             <label>Time Slot</label>
+             <select id="appt-time">
                <option value="10:00 AM">Monday 10:00 AM</option>
                <option value="02:00 PM">Wednesday 02:00 PM</option>
                <option value="11:00 AM">Friday 11:00 AM</option>
              </select>
            </div>
            <div style="grid-column: span 2;">
-             <label style="font-size: 12px; opacity: 0.7;">Reason for Guidance</label>
-             <textarea id="appt-reason" placeholder="Briefly describe your concern..." rows="2" style="width: 100%; padding: 12px; background: var(--surface2); border: 1px solid var(--border); color: white; border-radius: 10px; margin-top: 5px;"></textarea>
+             <label>Reason for Guidance</label>
+             <textarea id="appt-reason" placeholder="Briefly describe your concern..." rows="2"></textarea>
            </div>
            <button class="book-btn" onclick="submitAppointment()" style="grid-column: span 2; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 600; margin-top: 10px;">Confirm & Book Appointment</button>
            <div id="appt-status" style="grid-column: span 2; margin-top: 10px; text-align: center;"></div>

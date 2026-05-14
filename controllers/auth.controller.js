@@ -11,7 +11,10 @@ exports.signup = async (req, res) => {
     const user = new User({ name, email, password, studentId });
     await user.save();
     res.json({ message: "Account created successfully!" });
-  } catch (err) { res.status(500).json({ error: "Signup Failed: " + err.message }); }
+  } catch (err) { 
+    console.error("Signup Error:", err);
+    res.status(500).json({ error: "Signup Failed: " + err.message }); 
+  }
 };
 
 exports.login = async (req, res) => {
@@ -25,5 +28,8 @@ exports.login = async (req, res) => {
 
     const token = jwt.sign({ id: user._id, studentId: user.studentId }, "SECRET_KEY", { expiresIn: "1d" });
     res.json({ token, studentId: user.studentId, name: user.name });
-  } catch (err) { res.status(500).json({ error: "Login Failed" }); }
+  } catch (err) { 
+    console.error("Login Error:", err);
+    res.status(500).json({ error: "Login Failed: " + err.message }); 
+  }
 };
