@@ -6,13 +6,35 @@ const mongoose = require("mongoose");
  * GEMINI-POWERED CHAT CONTROLLER
  * Optimized for Gemini Flash Latest (Verified Key)
  */
+const SYSTEM_PROMPT = `
+You are AcadBot, a professional and helpful Academic Advisor. 
+Your goal is to guide students with course selection, stress management, and career paths.
+
+CRITICAL INSTRUCTION:
+If the user expresses a desire to:
+- Book an appointment
+- Schedule a meeting
+- Talk to a real person/counselor
+- Get a face-to-face consultation
+- "Book now" or "Fix a time"
+
+You MUST append the tag "[BOOK_NOW]" (exactly in this format) at the very end of your response. 
+This will trigger the appointment booking form for the student.
+
+Example response for booking:
+"I would be happy to help you with that! You can schedule a session with our experts right here. [BOOK_NOW]"
+`;
+
 async function callAI(message, historyContext, preferredProvider = "auto") {
   const providers = {
     groq: async () => {
       const res = await fetch("https://api.groq.com/openai/v1/responses", {
         method: "POST",
         headers: { "Authorization": `Bearer ${process.env.GROQ_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "openai/gpt-oss-20b", input: `Context:\n${historyContext}\n\nUser Question: ${message}` })
+        body: JSON.stringify({ 
+          model: "openai/gpt-oss-20b", 
+          input: `${SYSTEM_PROMPT}\n\nConversation Context:\n${historyContext}\n\nUser Question: ${message}` 
+        })
       });
       const data = await res.json();
       const text = data.output?.find(o => o.type === "message")?.content?.[0]?.text;
@@ -23,7 +45,12 @@ async function callAI(message, historyContext, preferredProvider = "auto") {
       const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: `You are AcadBot. Context:\n${historyContext}\n\nUser Question: ${message}` }] }] })
+        body: JSON.stringify({ 
+          contents: [{ 
+            role: "user", 
+            parts: [{ text: `${SYSTEM_PROMPT}\n\nConversation Context:\n${historyContext}\n\nUser Question: ${message}` }] 
+          }] 
+        })
       });
       const data = await res.json();
       if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
@@ -37,7 +64,10 @@ async function callAI(message, historyContext, preferredProvider = "auto") {
         headers: { "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "google/gemini-2.0-flash-001",
-          messages: [{ role: "system", content: "You are AcadBot, a helpful academic advisor." }, { role: "user", content: `Context:\n${historyContext}\n\nUser Question: ${message}` }]
+          messages: [
+            { role: "system", content: SYSTEM_PROMPT }, 
+            { role: "user", content: `Conversation Context:\n${historyContext}\n\nUser Question: ${message}` }
+          ]
         })
       });
       const data = await res.json();
