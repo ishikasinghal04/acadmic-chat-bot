@@ -165,11 +165,21 @@ function renderResponse(raw, usage, provider) {
 }
 
 function parseMarkdown(text) {
-  let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/^\*\s(.*)/gm, '<li>$1</li>').replace(/\n/g, '<br/>');
+  if (!text) return "";
+  // 1. Bullet points
+  let html = text.replace(/^\*\s(.*)/gm, '<li>$1</li>');
+  // 2. Bold text
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  // 3. Newlines
+  html = html.replace(/\n/g, '<br/>');
+  // 4. Wrap lists
+  if (html.includes('<li>')) {
+    html = html.replace(/(<li>.*<\/li>)/gms, '<ul style="margin: 10px 0 10px 20px;">$1</ul>');
+  }
   return html;
 }
 
-function appendMessage(role, content, showBookBtn = false, usage = null, provider = null) {
+async function appendMessage(role, content, showBookBtn = false, usage = null, provider = null) {
   const container = document.getElementById("chat-messages");
   const div = document.createElement("div");
   div.className = `message ${role}-message`;
@@ -181,12 +191,51 @@ function appendMessage(role, content, showBookBtn = false, usage = null, provide
     metaHtml = `<div style="font-size:9px; opacity:0.5; margin-top:5px; text-align:right;">🤖 ${providerName}${tokens}</div>`;
   }
 
+  const avatar = `<div class="avatar">${role === 'user' ? '👤' : '🤖'}</div>`;
+  const bubbleId = `bubble-${Date.now()}`;
+  
   div.innerHTML = `
-    <div class="avatar">${role === 'user' ? '👤' : '🤖'}</div>
-    <div class="bubble">${parseMarkdown(content)}${showBookBtn ? `<button onclick="showView('appointment')">📅 Book Consultation</button>` : ''}${metaHtml}</div>
+    ${avatar}
+    <div class="bubble" id="${bubbleId}"></div>
   `;
   container.appendChild(div);
+  
+  const bubble = document.getElementById(bubbleId);
+  
+  if (role === 'assistant') {
+    // ⌨️ Typing Effect
+    const fullHtml = parseMarkdown(content) + (showBookBtn ? `<br/><button onclick="showView('appointment')" style="margin-top:10px;">📅 Book Consultation</button>` : "") + metaHtml;
+    await typeEffect(bubble, fullHtml);
+  } else {
+    bubble.innerHTML = parseMarkdown(content);
+  }
+  
   container.scrollTop = container.scrollHeight;
+}
+
+function typeEffect(element, html) {
+  return new Promise((resolve) => {
+    let i = 0;
+    const speed = 15; // ms per char
+    element.innerHTML = "";
+    
+    // To handle HTML tags, we reveal the full HTML gradually using a hidden div or similar
+    // But for simplicity, we'll just inject the HTML and use a "fade in" or "clip" effect
+    // OR we can just show it instantly if it's too complex. 
+    // Let's do a simple "chunk" reveal.
+    
+    element.style.opacity = 0;
+    element.innerHTML = html;
+    let opacity = 0;
+    const timer = setInterval(() => {
+      opacity += 0.1;
+      element.style.opacity = opacity;
+      if (opacity >= 1) {
+        clearInterval(timer);
+        resolve();
+      }
+    }, 30);
+  });
 }
 
 function showTyping() {

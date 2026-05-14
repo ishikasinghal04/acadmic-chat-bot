@@ -24,14 +24,17 @@ app.use("/api/auth", authRoutes);
 
 const PORT = process.env.PORT || 3000;
 
-// Database Connection & Server Start
-connectDB().then(() => {
+// Database Connection
+connectDB();
+
+// Start Server for local development
+if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => {
     console.log(`\n  🚀 AcadBot Enterprise Live`);
     console.log(`  📡 Portal: http://localhost:${PORT}`);
     console.log(`  🛡️ Admin: http://localhost:${PORT}/admin.html\n`);
   });
-}).catch(err => {
-  console.error("💥 Failed to start server due to DB connection failure.");
-  process.exit(1);
-});
+}
+
+// Export for Vercel
+module.exports = app;
