@@ -13,7 +13,10 @@ exports.bookAppointment = async (req, res) => {
     });
     await appt.save();
     res.json({ message: "Success", appointment: appt });
-  } catch (err) { res.status(500).json({ error: "DB Error" }); }
+  } catch (err) { 
+    console.error("Booking Error:", err);
+    res.status(500).json({ error: "Database Error: " + err.message }); 
+  }
 };
 
 exports.getAppointments = async (req, res) => {
