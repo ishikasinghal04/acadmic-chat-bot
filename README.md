@@ -111,3 +111,4 @@ AcadBot Enterprise 2.0 is not just a chatbot; it is a full-scale **Decision Supp
 **Project Date**: May 2026  
 **Institution**: Academic Advisor Chatbot Initiative  
 **GitHub**: [https://github.com/ishikasinghal04/acadmic-chat-bot.git](https://github.com/ishikasinghal04/acadmic-chat-bot.git)
+**Vercel App**: [https://acadmic-chat-bot.vercel.app/](https://acadmic-chat-bot.vercel.app/)
